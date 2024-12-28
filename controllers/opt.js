@@ -1,4 +1,4 @@
-import { checkexpiredOTP, comparer } from "../utils/hasher.js";
+import { checkexpiredOTP, comparer } from "../utils/bcryptfunctions.js";
 
 const { sendMail } = require("../utils/mailer");
 const OTP = require('../schemas/otpschema')

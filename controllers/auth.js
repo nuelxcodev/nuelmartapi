@@ -1,5 +1,5 @@
 const User = require("../schemas/user");
-const { comparer } = require("../utils/hasher");
+const { comparer } = require("../utils/bcryptfunctions.js");
 const { sendOTP } = require("./otp");
 
 export async function register(req, res) {
