@@ -1,4 +1,5 @@
 const User = require("../schemas/user");
+const Item = require('../schemas/products.js')
 const { hasher, comparer } = require("../utils/bcryptfunctions.js");
 const { sendOTP } = require("./opt.js");
 
