@@ -11,13 +11,7 @@ const PORT = process.env.PORT;
 
 app.use("/api", router);
 app.use(express.json());
-app.use(
-  cors({
-    origin: "https://nuelmart.netlify.app",
-    methods: ["GET", "POST", "PUT", "DELETE"], 
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-); // Update this with your frontend URL
+app.use(cors())
 app.use(cookieParser());
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
