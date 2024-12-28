@@ -1,10 +1,11 @@
-import { checkexpiredOTP, comparer } from "../utils/bcryptfunctions.js";
+const { hasher } = require("../utils/bcryptfunctions");
+
 
 const { sendMail } = require("../utils/mailer");
 const OTP = require('../schemas/otpschema')
 
 // OTP generator
-export async function OTPgenerator() {
+ async function OTPgenerator() {
   try {
     return Math.floor(10000 + Math.random() * 9000);
   } catch (error) {
@@ -13,7 +14,7 @@ export async function OTPgenerator() {
 }
 
 // send OTP
-export async function sendOTP({ email, subject, message, duration = 2 }) {
+async function sendOTP({ email, subject, message, duration = 2 }) {
   try {
     if (!email && subject && message) {
       throw Error("please enter values email, subject, message");
@@ -113,7 +114,7 @@ export async function sendOTP({ email, subject, message, duration = 2 }) {
   }
 }
 
-export async function OTPverification(req, res) {
+async function OTPverification(req, res) {
   try {
     const { otp, email } = req.body;
 
@@ -166,3 +167,5 @@ export async function OTPverification(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 }
+
+module.exports = { sendOTP, OTPverification}

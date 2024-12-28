@@ -1,6 +1,6 @@
 const Stripe = require('stripe')
 
-export async function checkOutItems(req, res) {
+async function checkOutItems(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   try {
     const { amount, email } = req.body; // Get the amount from the client request
@@ -19,3 +19,5 @@ export async function checkOutItems(req, res) {
     res.status(500).json(error);
   }
 }
+
+module.exports = {checkOutItems}

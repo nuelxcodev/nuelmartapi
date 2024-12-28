@@ -1,8 +1,9 @@
 const User = require("../schemas/user");
-const { comparer } = require("../utils/bcryptfunctions.js");
-const { sendOTP } = require("./otp");
+const { hasher, comparer } = require("../utils/bcryptfunctions.js");
+const { sendOTP } = require("./opt.js");
 
-export async function register(req, res) {
+
+async function register(req, res) {
   const { username, email, password } = req.body;
 
   // Check if all fields are provided
@@ -57,7 +58,7 @@ export async function register(req, res) {
   }
 }
 
-export async function login(req, res) {
+ async function login(req, res) {
   const { email, password } = req.body;
   if (!(email && password)) {
     res.status(400).json({ message: "Missing credentials" });
@@ -92,7 +93,7 @@ export async function login(req, res) {
     });
   }
 }
-export async function resetpassword(req, res) {
+async function resetpassword(req, res) {
   const { email } = req.body;
 
   console.log(email);
@@ -149,7 +150,7 @@ export async function resetpassword(req, res) {
       .json({ message: "An error occurred. Please try again later." });
   }
 }
-export async function items(req, res) {
+ async function items(req, res) {
   const { username, data } = req.body;
   const { name, slug, category, brand, price, countInStock, image } = data;
   const newitem = await Item.create({
@@ -164,8 +165,10 @@ export async function items(req, res) {
   });
   return res.json({ status: "success", message: "created" });
 }
-export async function getitems(req, res) {
+ async function getitems(req, res) {
   const allItem = await Item.find();
   const data = allItem;
   res.json(data);
 }
+
+module.exports = { register, login, resetpassword, items, getitems}

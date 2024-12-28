@@ -1,8 +1,7 @@
-const { OTPverification } = require("../controllers/opt.js");
-const{ checkOutItems } =require("../controllers/stripe");
-
 const { Router } = require("express");
-const { register, login, resetpassword } = require('../controllers/auth.js')
+const { register, login, resetpassword, getitems, items } = require('../controllers/auth.js');
+const { OTPverification } = require("../controllers/opt.js");
+const { checkOutItems } = require("../controllers/stripe.js");
 
 const router = Router();
 
@@ -15,8 +14,8 @@ router.route("/resetpassword").post(resetpassword);
 router.route("/Otpverification").post(OTPverification);
 
 // items
-router.route("/item").post(controller.items);
-router.route("/getitem").get(controller.getitems);
+router.route("/item").post(items);
+router.route("/getitem").get(getitems);
 
 // checkout stripe
 router.route("/checkout").post(checkOutItems);
