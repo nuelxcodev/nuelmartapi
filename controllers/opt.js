@@ -1,7 +1,7 @@
 const { hasher } = require("../utils/bcryptfunctions");
-
-
 const { sendMail } = require("../utils/mailer");
+
+
 const OTP = require('../schemas/otpschema')
 
 // OTP generator

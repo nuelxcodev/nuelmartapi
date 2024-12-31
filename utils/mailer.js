@@ -35,4 +35,4 @@ async function sendMail(mailOptions) {
   }
 }
 
-module.exports =  sendMail 
+module.exports =  {sendMail} 

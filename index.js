@@ -17,7 +17,7 @@ app.use(cookieParser());
 
 // CORS configuration
 const corsOptions = {
-  origin: "https://nuelmart.netlify.app", // Allow requests from your frontend URI
+  origin: process.env.CLEINT_URL, // Allow requests from your frontend URI
   methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 };
@@ -25,7 +25,7 @@ app.use(cors(corsOptions));
 
 // Logger middleware to log incoming requests
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log(`${req.method} ${req.url} by ${new Date(Date.now()).toLocaleString()}`);
   next();
 });
 

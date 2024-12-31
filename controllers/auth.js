@@ -1,54 +1,91 @@
 const User = require("../schemas/user");
-const Item = require('../schemas/products.js')
-const { hasher, comparer } = require("../utils/bcryptfunctions.js");
+const OTP = require("../schemas/otpschema");
+const {
+  hasher,
+  comparer,
+  checkexpiredOTP,
+} = require("../utils/bcryptfunctions.js");
 const { sendOTP } = require("./opt.js");
-
 
 async function register(req, res) {
   const { username, email, password } = req.body;
 
   // Check if all fields are provided
   if (!(username && email && password)) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Missing credentials. Please input them to continue.",
     });
+    return;
   }
 
   try {
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: "User already exists. Please login or use a different email.",
-      });
+      if (existingUser.token) {
+        res.status(400).json({
+          success: false,
+          message:
+            "User already exists. Please login or use a different email.",
+        });
+        return;
+      }
+      // if incoming request does not have token then is not verified and can't login
+      // check if their is an OTP already dedicated to this request
 
+      const unUsedOtp_found = OTP.findOne({ email });
+      if (!unUsedOtp_found) {
+        // if there is no matching otp for this reques we send new OTP
+        await sendOTP({
+          email,
+          message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
+          subject: "OTP verification",
+        });
+
+        // we save the user that just receive an OTP in the database
+        // but the won't still be able to login
+        const hashedPassword = await hasher(password);
+        const new_user = new User({
+          username,
+          email,
+          password: hashedPassword,
+        });
+        await new_user.save();
+
+        // we are done here we now wait fo the verification of the OTP
+        return;
+      } else {
+        // this block will run if only request client  has an existing but have not been verified
+        // first check if Otp is verified
+        const expired = checkexpiredOTP(unUsedOtp_found);
+        if (expired) {
+          OTP.deleteOne({ email });
+          await sendOTP({
+            email,
+            message: `hello ${username},\n\nyour new One-Time Password (OTP) is :`,
+            subject: "verification code",
+          });
+          res.status(400).json({
+            message: "a new OTP has been sent to your email verify your account",
+            otpsent: true,
+          });
+        }
+        // request response
+        res.status(400).json({
+          message: "please check you email for otp and verify your account",
+          otpsent: true,
+        });
+      }
       return;
     } else {
-      // Send OTP to the user's email
-      await sendOTP({
-        email,
-        message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
-        subject: "OTP verification",
-      });
-
-      // Create the new user
-      const hashedPassword = await hasher(password);
-      const new_user = new User({
-        username,
-        email,
-        password: hashedPassword,
-      });
-
-      await new_user.save();
-
       // Respond with a message for OTP verification
       res.status(200).json({
         success: true,
         message: `Please enter the OTP sent to your email address (${email}).`,
         nextStep: "Enter OTP",
       });
+      return;
     }
   } catch (error) {
     console.error(error);
@@ -59,7 +96,7 @@ async function register(req, res) {
   }
 }
 
- async function login(req, res) {
+async function login(req, res) {
   const { email, password } = req.body;
   if (!(email && password)) {
     res.status(400).json({ message: "Missing credentials" });
@@ -68,6 +105,7 @@ async function register(req, res) {
     const user = await User.findOne({ email });
     if (!user) {
       res.status(400).json({ message: "user does not exist" });
+      return;
     }
     comparer(password, user.password)
       .then(async () => {
@@ -151,25 +189,5 @@ async function resetpassword(req, res) {
       .json({ message: "An error occurred. Please try again later." });
   }
 }
- async function items(req, res) {
-  const { username, data } = req.body;
-  const { name, slug, category, brand, price, countInStock, image } = data;
-  const newitem = await Item.create({
-    username,
-    name,
-    slug,
-    category,
-    brand,
-    price,
-    countInStock,
-    image,
-  });
-  return res.json({ status: "success", message: "created" });
-}
- async function getitems(req, res) {
-  const allItem = await Item.find();
-  const data = allItem;
-  res.json(data);
-}
 
-module.exports = { register, login, resetpassword, items, getitems}
+module.exports = { register, login, resetpassword };
