@@ -6,6 +6,7 @@ const {
   checkexpiredOTP,
 } = require("../utils/bcryptfunctions.js");
 const { sendOTP } = require("./opt.js");
+const user = require("../schemas/user");
 
 async function register(req, res) {
   const { username, email, password } = req.body;
@@ -18,65 +19,54 @@ async function register(req, res) {
     });
     return;
   }
-  const unUsedOtp_found = OTP.findOne({ email });
 
   try {
+    const unUsedOtp_found = OTP.findOne({ email });
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      if (existingUser.token) {
-        res.status(400).json({
-          success: false,
-          message:
-            "User already exists. Please login or use a different email.",
-        });
-        return;
-      }
-
-      if (!unUsedOtp_found) {
-        await sendOTP({
-          email,
-          message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
-          subject: "OTP verification",
-        });
-      } else {
-        const expired = checkexpiredOTP(unUsedOtp_found);
-        if (expired) {
-          OTP.deleteOne({ email });
+      if (!existingUser.token) {
+        if (unUsedOtp_found) {
+          const expired = await checkexpiredOTP(unUsedOtp_found);
+          if (!expired) {
+            res.status(400).json({
+              message: "please check your email for an OTP",
+              otpsent: true,
+            });
+            return;
+          }
           await sendOTP({
             email,
             message: `hello ${username},\n\nyour new One-Time Password (OTP) is :`,
             subject: "verification code",
           });
-
           res.status(400).json({
-            message: "please check you email for otp and verify your account",
+            message: `new OTP has been sent to ${email} please check your email `,
             otpsent: true,
           });
           return;
         }
       }
-    } else {
-      await sendOTP({
-        email,
-        message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
-        subject: "OTP verification",
-      });
-      const hashedPassword = await hasher(password);
-      const new_user = new User({
-        username,
-        email,
-        password: hashedPassword,
-      });
-      await new_user.save();
-      
-      res.status(200).json({
-        success: true,
-        message: `Please enter the OTP sent to your email address (${email}).`,
-        nextStep: "Enter OTP",
-      });
-      return;
     }
+    const hashedPassword = await hasher(password);
+    const new_user = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
+    await new_user.save();
+
+    await sendOTP({
+      email,
+      message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
+      subject: "OTP verification",
+    });
+    res.status(200).json({
+      success: true,
+      message: `Please enter the OTP sent to your email address (${email}).`,
+      nextStep: "Enter OTP",
+    });
+    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({
