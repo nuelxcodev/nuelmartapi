@@ -27,7 +27,7 @@ async function register(req, res) {
     if (existingUser) {
       if (!existingUser.token) {
         if (unUsedOtp_found) {
-          const expired = await checkexpiredOTP(unUsedOtp_found);
+          const expired = checkexpiredOTP(unUsedOtp_found);
           if (!expired) {
             res.status(400).json({
               message: "please check your email for an OTP",
