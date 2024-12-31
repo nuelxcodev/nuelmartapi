@@ -18,6 +18,7 @@ async function register(req, res) {
     });
     return;
   }
+  const unUsedOtp_found = OTP.findOne({ email });
 
   try {
     // Check if the user already exists
@@ -31,33 +32,14 @@ async function register(req, res) {
         });
         return;
       }
-      // if incoming request does not have token then is not verified and can't login
-      // check if their is an OTP already dedicated to this request
 
-      const unUsedOtp_found = OTP.findOne({ email });
       if (!unUsedOtp_found) {
-        // if there is no matching otp for this reques we send new OTP
         await sendOTP({
           email,
           message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
           subject: "OTP verification",
         });
-
-        // we save the user that just receive an OTP in the database
-        // but the won't still be able to login
-        const hashedPassword = await hasher(password);
-        const new_user = new User({
-          username,
-          email,
-          password: hashedPassword,
-        });
-        await new_user.save();
-
-        // we are done here we now wait fo the verification of the OTP
-        return;
       } else {
-        // this block will run if only request client  has an existing but have not been verified
-        // first check if Otp is verified
         const expired = checkexpiredOTP(unUsedOtp_found);
         if (expired) {
           OTP.deleteOne({ email });
@@ -66,20 +48,28 @@ async function register(req, res) {
             message: `hello ${username},\n\nyour new One-Time Password (OTP) is :`,
             subject: "verification code",
           });
+
           res.status(400).json({
-            message: "a new OTP has been sent to your email verify your account",
+            message: "please check you email for otp and verify your account",
             otpsent: true,
           });
+          return;
         }
-        // request response
-        res.status(400).json({
-          message: "please check you email for otp and verify your account",
-          otpsent: true,
-        });
       }
-      return;
     } else {
-      // Respond with a message for OTP verification
+      await sendOTP({
+        email,
+        message: `Dear ${username},\n\nThank you for using NUELMAT. To proceed, please use the One-Time Password (OTP) below:`,
+        subject: "OTP verification",
+      });
+      const hashedPassword = await hasher(password);
+      const new_user = new User({
+        username,
+        email,
+        password: hashedPassword,
+      });
+      await new_user.save();
+      
       res.status(200).json({
         success: true,
         message: `Please enter the OTP sent to your email address (${email}).`,
