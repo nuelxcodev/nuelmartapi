@@ -32,6 +32,7 @@ async function register(req, res) {
             res.status(400).json({
               message: "please check your email for an OTP",
               otpsent: true,
+              email
             });
             return;
           }
@@ -43,6 +44,7 @@ async function register(req, res) {
           res.status(400).json({
             message: `new OTP has been sent to ${email} please check your email `,
             otpsent: true,
+            email
           });
           return;
         }

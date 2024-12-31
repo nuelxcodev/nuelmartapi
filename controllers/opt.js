@@ -1,11 +1,11 @@
 const { hasher } = require("../utils/bcryptfunctions");
 const { sendMail } = require("../utils/mailer");
 
-
-const OTP = require('../schemas/otpschema')
+const OTP = require("../schemas/otpschema");
+const jwt = require("")
 
 // OTP generator
- async function OTPgenerator() {
+async function OTPgenerator() {
   try {
     return Math.floor(10000 + Math.random() * 9000);
   } catch (error) {
@@ -115,11 +115,12 @@ async function sendOTP({ email, subject, message, duration = 2 }) {
 }
 
 async function OTPverification(req, res) {
+  console.log(req.body)
   try {
     const { otp, email } = req.body;
 
     // Validate the input
-    if (!otp || !email) {
+    if (!(otp && email)) {
       return res
         .status(400)
         .json({ message: "Credentials must be valid and not empty" });
@@ -155,7 +156,7 @@ async function OTPverification(req, res) {
     const token = jwt.sign({ email }, process.env.SECRET_JWT_KEY, {
       expiresIn: "1d", // Token valid for 1 day
     });
-    await unverifieduser.updateOne({ token});
+    await unverifieduser.updateOne({ token });
 
     // Respond with success
     return res.status(200).json({
@@ -168,4 +169,4 @@ async function OTPverification(req, res) {
   }
 }
 
-module.exports = { sendOTP, OTPverification}
+module.exports = { sendOTP, OTPverification };
