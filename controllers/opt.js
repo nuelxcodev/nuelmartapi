@@ -1,4 +1,4 @@
-const { hasher } = require("../utils/bcryptfunctions");
+const { hasher, checkexpiredOTP } = require("../utils/bcryptfunctions");
 const { sendMail } = require("../utils/mailer");
 
 const OTP = require("../schemas/otpschema");
@@ -114,7 +114,6 @@ async function sendOTP({ email, subject, message, duration = 2 }) {
 }
 
 async function OTPverification(req, res) {
-  console.log(req.body)
   try {
     const { otp, email } = req.body;
 
