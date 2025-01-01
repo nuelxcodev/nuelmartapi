@@ -1,6 +1,5 @@
 const { hasher, checkexpiredOTP } = require("../utils/bcryptfunctions");
 const { sendMail } = require("../utils/mailer");
-
 const OTP = require("../schemas/otpschema");
 
 // OTP generator
@@ -41,22 +40,17 @@ async function sendOTP({ email, subject, message, duration = 2 }) {
             }
             .email-container {
               width: 100%;
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              border-radius: 8px;
+              max-width: 800px;
+              background-color: #ffffff
               overflow: hidden;
-              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-              padding: 20px;
             }
             .header {
               text-align: center;
-              background-color: hotpink;
+              background-color:rgb(184, 5, 151) ;
               color: white;
               padding: 20px;
               font-size: 24px;
               font-weight: bold;
-              border-radius: 8px 8px 0 0;
             }
             .content {
               padding: 20px;

@@ -114,6 +114,7 @@ async function login(req, res) {
     });
   }
 }
+
 async function resetpassword(req, res) {
   const { email } = req.body;
 
