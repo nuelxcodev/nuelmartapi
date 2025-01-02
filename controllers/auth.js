@@ -96,8 +96,8 @@ async function login(req, res) {
           console.log("ok");
           return;
         } else {
-          await User.deleteOne({ email });
           res.status(400).json("user does not exist");
+          await User.deleteOne({ email });
           console.log("delected");
         }
       })
